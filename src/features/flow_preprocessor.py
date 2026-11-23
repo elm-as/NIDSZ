@@ -28,7 +28,6 @@ def _select_feature_columns(
 def _align_categorical_columns(
     x_train: pd.DataFrame, x_test: pd.DataFrame, cat_cols: tuple[str, ...]
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    # Fit vocabulary strictly on training split; unseen test values map to fallback token.
     train_copy = x_train.copy()
     test_copy = x_test.copy()
     for col in cat_cols:

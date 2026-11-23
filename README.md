@@ -1,6 +1,6 @@
 <div align="center">
 
-# NIDSZ — Network Intrusion Detection & Zero-Day Generalization
+# NIDSZ - Network Intrusion Detection & Zero-Day Generalization
 ### Étude de Cybersécurité Réseau sur 257 673 Flux (UNSW-NB15), Ablation des Raccourcis Lab, Points Opérationnels SOC Anti-Fatigue & Généralisation Zero-Day (LOAO)
 
 <br/>
@@ -51,7 +51,7 @@ Monographie de détection d'intrusions réseau analysant **257 673 flux officiel
 ## Problématique SOC & Enjeux de Généralisation Zero-Day
 
 Les détecteurs d'intrusions réseau (*NIDS*) publiés dans la littérature souffrent de trois biais critiques qui les rendent inexploitables en Centre Opérationnel de Sécurité (*SOC*) :
-1. **Fatigue d'alertes à haut FPR** : un modèle affichant `98%` de ROC-AUC mais évalué à `5%` de faux positifs génère `5 000` fausses alertes pour `100 000` flux bénins — saturant immédiatement les analystes L1. En production, seuls comptent **Recall @ FPR <= 0.1%** (`<= 100` fausses alertes / `100k` flux), **0.5%** et **1.0%**.
+1. **Fatigue d'alertes à haut FPR** : un modèle affichant `98%` de ROC-AUC mais évalué à `5%` de faux positifs génère `5 000` fausses alertes pour `100 000` flux bénins - saturant immédiatement les analystes L1. En production, seuls comptent **Recall @ FPR <= 0.1%** (`<= 100` fausses alertes / `100k` flux), **0.5%** et **1.0%**.
 2. **Raccourcis topologiques du banc de test (*Lab Shortcuts*)** : les variables TTL (`sttl`, `dttl`, `ct_state_ttl`), les fenêtres/séquences TCP synthétiques (`swin`, `dwin`, `stcpb`, `dtcpb`) et les compteurs de table de session (`state`, `ct_dst_sport_ltm`, `ct_src_dport_ltm`) encodent la topologie du générateur IXIA PerfectStorm plutôt que le comportement réel des attaques.
 3. **Illusion de généralisation Zero-Day** : un split classique évalue la mémorisation de familles déjà vues en entraînement. Seul un protocole **Leave-One-Attack-Family-Out (LOAO)** révèle les angles morts réels sur des menaces inédites (`Fuzzers`, `Shellcode`, `Exploits`, `Worms`).
 
@@ -62,9 +62,9 @@ Les détecteurs d'intrusions réseau (*NIDS*) publiés dans la littérature souf
 Le module [`src/ingestion/flow_schema_validator.py`](./src/ingestion/flow_schema_validator.py) charge les deux fichiers Parquet officiels sans aucun mélange :
 - **Volume officiel** : `175 341` flux d'entraînement (taux d'attaque `68.06%`) et `82 332` flux de holdout officiel (taux d'attaque `55.06%`), soit **`257 673` flux × `36` colonnes** (`34` variables prédictives, `0` valeur manquante, cohérence stricte `Normal <-> label == 0`).
 - **Audit de raccourcis TTL & banc de test** :
-  - Colonnes TTL (`sttl`, `dttl`, `ct_state_ttl`) : **`0/3` présentes** — cette édition Parquet 36 colonnes a déjà purgé la fuite TTL historique du CSV 45 colonnes.
+  - Colonnes TTL (`sttl`, `dttl`, `ct_state_ttl`) : **`0/3` présentes** - cette édition Parquet 36 colonnes a déjà purgé la fuite TTL historique du CSV 45 colonnes.
   - Raccourcis d'état/en-tête TCP & table de connexions identifiés (`10` colonnes) : `state`, `swin`, `dwin`, `stcpb`, `dtcpb`, `ct_src_dport_ltm`, `ct_dst_sport_ltm`, `ct_flw_http_mthd`, `ct_ftp_cmd`, `is_sm_ips_ports`.
-- **Audit de duplication & recouvrement inter-splits** : `78 519` doublons exacts en train (`92 098` vecteurs uniques), `32 361` en test (`48 231` vecteurs uniques) et **`20 851` flux de test (`25.33%`)** partageant un vecteur de 34 attributs identique avec le jeu d'entraînement (`1 487` signatures distinctes) — un artefact structurel documenté de la partition officielle UNSW-NB15.
+- **Audit de duplication & recouvrement inter-splits** : `78 519` doublons exacts en train (`92 098` vecteurs uniques), `32 361` en test (`48 231` vecteurs uniques) et **`20 851` flux de test (`25.33%`)** partageant un vecteur de 34 attributs identique avec le jeu d'entraînement (`1 487` signatures distinctes) - un artefact structurel documenté de la partition officielle UNSW-NB15.
 - **Prétraitement anti-fuite** ([`src/features/flow_preprocessor.py`](./src/features/flow_preprocessor.py)) : vocabulaires catégoriels ajustés strictement sur le train (toute modalité inédite en test est projetée sur `__UNSEEN__`), normalisation `signed-log1p + StandardScaler` encapsulée dans le pipeline entraîné sur le train seul.
 
 ---
@@ -99,15 +99,15 @@ flowchart TD
 
 | Mode / Modèle (Calibration) | ROC-AUC | PR-AUC | F1 Opt. | Brier | ECE-10 | Recall @0.1% | Recall @0.5% | Recall @1.0% | Débit (flux/s) | Latence (&mu;s/flux) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| **Full-34 — LightGBM (Platt OOF)** | **`0.9810`** | **`0.9864`** | **`0.9347`** | `0.0766` | **`0.0798`** | **`80.77%`** | `84.64%` | `86.43%` | `100,688` | `9.93` |
-| **Full-34 — LightGBM (Isotonic OOF)** | `0.9809` | `0.9857` | `0.9344` | `0.0773` | `0.0808` | `78.80%` | `84.45%` | `86.25%` | `100,688` | `9.93` |
-| **Full-34 — HistGB (Platt OOF)** | `0.9799` | `0.9856` | `0.9315` | `0.0791` | `0.0819` | `78.20%` | `84.33%` | `85.98%` | `41,708` | `23.98` |
-| **Full-34 — Logistic Regression (Platt)** | `0.9190` | `0.9379` | `0.8426` | `0.1374` | `0.1080` | `26.84%` | `61.41%` | `62.91%` | **`192,001`** | **`5.21`** |
-| **Full-34 — IsolationForest (Normal-Only)** | `0.7962` | `0.8196` | `0.7537` | `0.1990` | `0.1159` | `0.00%` | `1.26%` | `6.54%` | `55,592` | `17.99` |
-| **Behavioral-24 — LightGBM (Platt OOF)** | `0.9809` | `0.9863` | `0.9327` | **`0.0764`** | `0.0809` | `79.68%` | **`85.08%`** | **`86.45%`** | `142,948` | `7.00` |
-| **Behavioral-24 — HistGB (Platt OOF)** | `0.9801` | `0.9857` | `0.9298` | `0.0780` | `0.0819` | `79.04%` | `84.08%` | `85.65%` | `67,908` | `14.73` |
-| **Behavioral-24 — Logistic Reg. (Platt)** | `0.9122` | `0.9325` | `0.8404` | `0.1411` | `0.1132` | `18.32%` | `61.01%` | `62.61%` | `386,897` | `2.58` |
-| **Behavioral-24 — IsoForest (Normal-Only)** | `0.8006` | `0.7810` | `0.8013` | `0.2008` | `0.1244` | `0.11%` | `0.29%` | `1.14%` | `37,744` | `26.49` |
+| **Full-34 - LightGBM (Platt OOF)** | **`0.9810`** | **`0.9864`** | **`0.9347`** | `0.0766` | **`0.0798`** | **`80.77%`** | `84.64%` | `86.43%` | `100,688` | `9.93` |
+| **Full-34 - LightGBM (Isotonic OOF)** | `0.9809` | `0.9857` | `0.9344` | `0.0773` | `0.0808` | `78.80%` | `84.45%` | `86.25%` | `100,688` | `9.93` |
+| **Full-34 - HistGB (Platt OOF)** | `0.9799` | `0.9856` | `0.9315` | `0.0791` | `0.0819` | `78.20%` | `84.33%` | `85.98%` | `41,708` | `23.98` |
+| **Full-34 - Logistic Regression (Platt)** | `0.9190` | `0.9379` | `0.8426` | `0.1374` | `0.1080` | `26.84%` | `61.41%` | `62.91%` | **`192,001`** | **`5.21`** |
+| **Full-34 - IsolationForest (Normal-Only)** | `0.7962` | `0.8196` | `0.7537` | `0.1990` | `0.1159` | `0.00%` | `1.26%` | `6.54%` | `55,592` | `17.99` |
+| **Behavioral-24 - LightGBM (Platt OOF)** | `0.9809` | `0.9863` | `0.9327` | **`0.0764`** | `0.0809` | `79.68%` | **`85.08%`** | **`86.45%`** | `142,948` | `7.00` |
+| **Behavioral-24 - HistGB (Platt OOF)** | `0.9801` | `0.9857` | `0.9298` | `0.0780` | `0.0819` | `79.04%` | `84.08%` | `85.65%` | `67,908` | `14.73` |
+| **Behavioral-24 - Logistic Reg. (Platt)** | `0.9122` | `0.9325` | `0.8404` | `0.1411` | `0.1132` | `18.32%` | `61.01%` | `62.61%` | `386,897` | `2.58` |
+| **Behavioral-24 - IsoForest (Normal-Only)** | `0.8006` | `0.7810` | `0.8013` | `0.2008` | `0.1244` | `0.11%` | `0.29%` | `1.14%` | `37,744` | `26.49` |
 
 ### 2. Généralisation Zero-Day : Leave-One-Attack-Family-Out (7 Familles Inédites)
 
@@ -123,7 +123,7 @@ flowchart TD
 
 **Enseignements clés cybersécurité :**
 - **Ablation bénéfique sur les menaces complexes** : supprimer les 10 raccourcis de laboratoire (qui pèsent `13.11%` du SHAP global, dominés par `ct_dst_sport_ltm`) améliore la détection Zero-Day sur **`Exploits`** (`+3.33 pp` à `0.1%` FPR, `+2.12 pp` à `1.0%` FPR), **`Worms`** (`+2.27 pp` à `0.1%` FPR) et **`Fuzzers`** (`+2.56` points d'AUC), tout en accélérant l'inférence LightGBM de `9.93` à **`7.00 µs/flux`** (`142 948` flux/sec).
-- **Angle mort Zero-Day documenté** : `Fuzzers` (`24–25%` @ 1% FPR) et `Shellcode` (`20–27%` @ 1% FPR) demeurent difficiles à isoler à très faible faux-positif sans signatures dédiées ou inspection applicative (*DPI/EDR*).
+- **Angle mort Zero-Day documenté** : `Fuzzers` (`24-25%` @ 1% FPR) et `Shellcode` (`20-27%` @ 1% FPR) demeurent difficiles à isoler à très faible faux-positif sans signatures dédiées ou inspection applicative (*DPI/EDR*).
 
 ---
 
@@ -141,7 +141,7 @@ flowchart TD
 ## Dictionnaire des Variables & Hyperparamètres
 
 - **Variables comportementales clés (`Behavioral-24`)** : `dload`, `sload` (débit bits/s), `proto`, `service` (protocole/applicatif), `ackdat`, `synack`, `tcprtt`, `dur`, `rate`, `sinpkt`, `dinpkt`, `sjit`, `djit` (dynamique temporelle & gigue), `sbytes`, `dbytes`, `smean`, `dmean`, `spkts`, `dpkts`, `sloss`, `dloss`, `trans_depth`, `response_body_len`, `is_ftp_login`.
-- **Raccourcis audités / ablatés** : TTL (`sttl`, `dttl`, `ct_state_ttl` — vérifiés absents), état/en-têtes TCP & table de connexions (`state`, `swin`, `dwin`, `stcpb`, `dtcpb`, `ct_src_dport_ltm`, `ct_dst_sport_ltm`, `ct_flw_http_mthd`, `ct_ftp_cmd`, `is_sm_ips_ports`).
+- **Raccourcis audités / ablatés** : TTL (`sttl`, `dttl`, `ct_state_ttl` - vérifiés absents), état/en-têtes TCP & table de connexions (`state`, `swin`, `dwin`, `stcpb`, `dtcpb`, `ct_src_dport_ltm`, `ct_dst_sport_ltm`, `ct_flw_http_mthd`, `ct_ftp_cmd`, `is_sm_ips_ports`).
 - **Modèles & Hyperparamètres (`seed = 42`)** : `LightGBM` (`n_estimators=250`, `learning_rate=0.05`, `num_leaves=31`, `colsample_bytree=0.85`, `subsample=0.85`), `HistGradientBoosting` (`max_iter=200`, `max_leaf_nodes=31`, catégoriel natif), `LogisticRegression` (`signed-log1p + StandardScaler + OHE`, `C=1.0`), `IsolationForest` (`n_estimators=200`, `max_samples=512`, entraîné exclusivement sur `Normal`), calibration OOF 3-plis `Platt` & `Isotonic`.
 
 ---

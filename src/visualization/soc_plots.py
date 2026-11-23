@@ -82,7 +82,7 @@ def _plot_soc_roc_low_fpr(payload: NidszReportPayload, output_path: Path) -> Pat
     ax_roc.set_xscale("log")
     ax_roc.set_xlim(1e-4, 1.0)
     ax_roc.set_ylim(0.0, 1.03)
-    ax_roc.set_xlabel("False Positive Rate (Log Scale — SOC Alert Budget)")
+    ax_roc.set_xlabel("False Positive Rate (Log Scale - SOC Alert Budget)")
     ax_roc.set_ylabel("True Positive Rate (Detection Recall)")
     ax_roc.set_title("Low-FPR SOC ROC Curve (Official Holdout, n=82,332)", fontweight="bold")
     ax_roc.legend(loc="lower right", frameon=True, facecolor="#FFFFFF", fontsize=8.0)

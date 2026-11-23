@@ -9,7 +9,6 @@ from src.core.contracts import ModelHoldoutArtifact, NidszReportPayload
 
 def _serialize_artifact(art: ModelHoldoutArtifact) -> dict[str, object]:
     raw = asdict(art)
-    # Keep curves compact in JSON while preserving full precision on metrics.
     raw["roc_curve_fpr"] = [round(v, 6) for v in art.roc_curve_fpr]
     raw["roc_curve_tpr"] = [round(v, 6) for v in art.roc_curve_tpr]
     return raw

@@ -31,7 +31,6 @@ def benchmark_batch_inference(
         raise ValueError("Cannot benchmark inference on an empty feature batch.")
 
     batch = x_sample.iloc[:effective_size]
-    # Warm-up pass absorbs JIT/cache initialization before timing repeats.
     _ = score_fn(batch)
 
     elapsed_sec: list[float] = []

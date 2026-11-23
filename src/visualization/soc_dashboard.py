@@ -224,7 +224,7 @@ def build_soc_dashboard_html(
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NIDSZ — Network Intrusion Detection &amp; Zero-Day SOC Monitor</title>
+  <title>NIDSZ - Network Intrusion Detection &amp; Zero-Day SOC Monitor</title>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>{_DASHBOARD_CSS}</style>
 </head>
@@ -232,7 +232,7 @@ def build_soc_dashboard_html(
 <div class="container">
   <header class="header">
     <div>
-      <h1>NIDSZ — Network Intrusion Detection &amp; Zero-Day Generalization Monitor</h1>
+      <h1>NIDSZ - Network Intrusion Detection &amp; Zero-Day Generalization Monitor</h1>
       <p>UNSW-NB15 Official Partition (257,673 Flows) | TTL &amp; Testbed Shortcut Ablation, Low-FPR SOC Budgets &amp; 7-Family LOAO</p>
     </div>
     <div class="meta-strip">

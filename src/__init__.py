@@ -1,1 +1,1 @@
-"""NIDSZ — Network Intrusion Detection & Zero-Day Generalization package."""
+"""NIDSZ - Network Intrusion Detection & Zero-Day Generalization package."""

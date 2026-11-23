@@ -46,9 +46,11 @@ def run_nidsz_pipeline(project_root: Path | None = None) -> NidszReportPayload:
     paths = resolve_project_paths(project_root)
     config = NidszConfig()
 
+    # 1- Importation et controle des flux reseau officiels
     print("[1/6] Loading and auditing official UNSW-NB15 parquet partitions...")
     loaded = load_and_validate_flows(paths.train_parquet, paths.test_parquet)
 
+    # 2- Preparation des variables completes et sans raccourcis lab
     print("[2/6] Building Full-34 and Shortcut-Ablated-24 feature matrices...")
     full_matrix = build_flow_feature_matrix(
         loaded.train_df, loaded.test_df, "full_flow"
@@ -57,10 +59,12 @@ def run_nidsz_pipeline(project_root: Path | None = None) -> NidszReportPayload:
         loaded.train_df, loaded.test_df, "shortcut_ablated"
     )
 
+    # 3- Entrainement holdout et calibration anti-fatigue SOC
     print("[3/6] Running official holdout benchmarks + 3-fold OOF calibration...")
     full_suite = run_holdout_benchmark_suite(full_matrix, config)
     ablated_suite = run_holdout_benchmark_suite(ablated_matrix, config)
 
+    # 4- Evaluation zero-day (familles d'attaques inconnues) et SHAP
     print("[4/6] Running 7-family Leave-One-Attack-Family-Out (Zero-Day LOAO)...")
     loao_results = run_zero_day_loao_benchmark(
         LoaoBenchmarkInput(
@@ -96,6 +100,7 @@ def run_nidsz_pipeline(project_root: Path | None = None) -> NidszReportPayload:
         random_seed=config.random_seed,
     )
 
+    # 5- Export des graphiques, du dashboard et des resultats JSON
     print("[6/6] Exporting JSON, 4 publication 300 DPI PNGs, and HTML5 dashboard...")
     export_results_json(payload, paths.results_json)
     render_all_soc_figures(payload, paths.images_dir)

@@ -7,10 +7,8 @@ TARGET_COLUMN = "label"
 ATTACK_FAMILY_COLUMN = "attack_cat"
 NORMAL_FAMILY_LABEL = "Normal"
 
-# Classic UNSW-NB15 hop-count shortcuts that leak synthetic lab routing topology.
 TTL_SHORTCUT_COLUMNS: tuple[str, ...] = ("sttl", "dttl", "ct_state_ttl")
 
-# Full testbed/session-table shortcut set ablated to isolate pure behavioral telemetry.
 TESTBED_SHORTCUT_COLUMNS: tuple[str, ...] = (
     "sttl",
     "dttl",

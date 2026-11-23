@@ -151,7 +151,6 @@ def _evaluate_isolation_forest(
 def _select_best_artifact(
     artifacts: list[ModelHoldoutArtifact],
 ) -> ModelHoldoutArtifact:
-    # Prioritize Recall @ strict 0.1% FPR, breaking ties by ROC-AUC and low Brier.
     def _rank_key(art: ModelHoldoutArtifact) -> tuple[float, float, float]:
         strict_recall = art.soc_operating_points[0].recall_tpr
         return (strict_recall, art.metrics.roc_auc, -art.metrics.brier_score)
